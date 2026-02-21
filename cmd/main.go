@@ -9,10 +9,13 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/atotto/clipboard"
 	"github.com/kissanjamgit/ext"
 	"github.com/kissanjamgit/ext/advd"
 	"github.com/kissanjamgit/ext/blacked"
+	brazz "github.com/kissanjamgit/ext/braz"
 	"github.com/kissanjamgit/ext/devilsfilm"
+	"github.com/kissanjamgit/ext/fidelity"
 	"github.com/kissanjamgit/ext/kk"
 	"github.com/kissanjamgit/ext/lulustream"
 	"github.com/kissanjamgit/ext/pornbox"
@@ -20,6 +23,7 @@ import (
 	"github.com/kissanjamgit/ext/streamtape"
 	"github.com/kissanjamgit/ext/strmup"
 	"github.com/kissanjamgit/ext/vidnest"
+
 	"resty.dev/v3"
 )
 
@@ -46,6 +50,10 @@ var convergTree = map[string]func(string) ext.Site{
 	"kink":           kk.New,
 	"adultdvdempire": advd.New,
 
+	"teenfidelity": fidelity.New,
+	"pornfidelity": fidelity.New,
+	"kellymadison": fidelity.New,
+
 	"blacked":    blacked.New,
 	"tushy":      blacked.New,
 	"vixen":      blacked.New,
@@ -59,6 +67,13 @@ var convergTree = map[string]func(string) ext.Site{
 	"pornbox":  pornbox.New,
 	"analvids": pornbox.New,
 	"pissvids": pornbox.New,
+
+	"brazzers":  brazz.New,
+	"newbrazz":  brazz.New,
+	"bangbros":  brazz.New,
+	"bang-free": brazz.New,
+
+	// https://savefiles.com/twf8dbikffc4
 }
 
 func domainOnly(raw string) (str string, err error) {
@@ -129,30 +144,27 @@ func prtErrorList(list []inputError) {
 	fmt.Fprint(os.Stderr, buf.String())
 }
 
-func main() {
+func facade() {
 	inputArg := flag.String("i", "", "input")
 	dragNDrop := flag.Bool("dd", false, "drag and drop")
 	download := flag.Bool("d", false, "download")
-	clipboard := flag.Bool("c", false, "copy from clipboard")
+	clipboardArg := flag.Bool("c", false, "copy from clipboard")
 	flag.Parse()
 
 	argExclution := 0
-	for _, i := range []bool{*dragNDrop, *download, *clipboard} {
+	for _, i := range []bool{*dragNDrop, *clipboardArg} {
 		if !i {
 			continue
 		}
 		argExclution++
 	}
 	if argExclution > 1 {
-		err := fmt.Errorf("only one can be selected at an instance dragNDrop, download and clipboard")
+		err := fmt.Errorf("only one can be selected at an instance dragNDrop, and clipboard")
 		panic(err)
 	}
 
 	var input []string
-
-	if *inputArg != "" {
-		input = httpSplit(*inputArg)
-	} else if *dragNDrop {
+	if *dragNDrop {
 		reader := bufio.NewReader(os.Stdin)
 		str, err := reader.ReadString('\n')
 		if err != nil {
@@ -161,6 +173,18 @@ func main() {
 		}
 		input = httpSplit(str)
 	}
+	if *clipboardArg {
+		i, err := clipboard.ReadAll()
+		if err != nil {
+			panic(err)
+		}
+		input = httpSplit(i)
+	}
+
+	if *inputArg != "" {
+		input = httpSplit(*inputArg)
+	}
+
 	var inputErrorList []inputError
 
 	client := resty.New()
@@ -227,9 +251,19 @@ func main() {
 	}()
 
 	cr := <-CR
-	fmt.Printf("#EXTM3U\n#EXTINF:-1,%s\n%s\n", cr.Name, cr.URL)
+	if cr.Name != "" && cr.URL != "" {
+		fmt.Printf("#EXTM3U\n#EXTINF:-1,%s\n%s\n", cr.Name, cr.URL)
+	}
 	for cr = range CR {
 		fmt.Printf("#EXTINF:-1,%s\n%s\n", cr.Name, cr.URL)
 	}
 	prtErrorList(inputErrorList)
+}
+
+func main() {
+	facade()
+	// experiment()
+}
+
+func experiment() {
 }

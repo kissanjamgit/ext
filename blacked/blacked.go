@@ -3,11 +3,16 @@ package blacked
 
 import (
 	"fmt"
+	"io"
 	"maps"
 	"net/url"
+	"os"
 	"os/exec"
 	"regexp"
 
+	http "github.com/bogdanfinn/fhttp"
+	tls_client "github.com/bogdanfinn/tls-client"
+	"github.com/bogdanfinn/tls-client/profiles"
 	"github.com/kissanjamgit/ext"
 	"resty.dev/v3"
 )
@@ -68,13 +73,51 @@ func getHeader(uri *url.URL) map[string]string {
 	// }
 }
 
-func getVideoMetaData(uri *url.URL, client *resty.Client) (id string, title string, err error) {
-	res, err := client.R().Get(uri.String())
+func getVideoMetaData(uri *url.URL, _ *resty.Client) (id string, title string, err error) {
+	options := []tls_client.HttpClientOption{
+		tls_client.WithTimeoutSeconds(30),
+		tls_client.WithClientProfile(profiles.Chrome_144),
+		tls_client.WithNotFollowRedirects(),
+	}
+	c, err := tls_client.NewHttpClient(tls_client.NewLogger(), options...)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
+
+	req, err := http.NewRequest(http.MethodGet, uri.String(), nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	req.Header = http.Header{
+		"accept":          {},
+		"accept-language": {"de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7"},
+		"user-agent":      {"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"},
+		http.HeaderOrderKey: {
+			"accept",
+			"accept-language",
+			"user-agent",
+		},
+	}
+	r, err := c.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var data []byte
+	data, err = io.ReadAll(r.Body)
+	os.WriteFile("content.html", data, 0o644)
+	// panic("unimplemented")
+	// res, err := client.R().Get(uri.String())
+	// if err != nil {
+	// 	return
+	// }
+	// data = res.String()
 	regVideoID := regexp.MustCompile(`"videoId":"([^"]+)"`)
-	subVideoID := regVideoID.FindStringSubmatch(res.String())
+	subVideoID := regVideoID.FindStringSubmatch(string(data))
 	if len(subVideoID) < 1 {
 		err = fmt.Errorf("(getVideoID) `len(subVideoID)<1` subVideoID: %v", subVideoID)
 		return
@@ -82,7 +125,7 @@ func getVideoMetaData(uri *url.URL, client *resty.Client) (id string, title stri
 	id = subVideoID[1]
 
 	regTitle := regexp.MustCompile(`"title":"([^"]+)"`)
-	subTitle := regTitle.FindStringSubmatch(res.String())
+	subTitle := regTitle.FindStringSubmatch(string(data))
 	if len(subTitle) < 1 {
 		err = fmt.Errorf("(getVideoMetaData) `len(title)<1` title: %v", subTitle)
 		return
@@ -101,7 +144,6 @@ func (b *Blacked) Resource(client *resty.Client) (cr ext.ContentResource, err er
 	if err != nil {
 		return
 	}
-
 	res, err := client.R().SetHeaders(getHeader(uri)).SetBody(getBody(videoID)).Post(
 		fmt.Sprintf("%s://%s/graphql", uri.Scheme, uri.Hostname()))
 	if err != nil {
