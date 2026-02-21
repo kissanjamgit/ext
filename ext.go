@@ -62,6 +62,7 @@ func NewSiteAlter(Source string) Site {
 
 func (s *SiteAlter) Resource(*resty.Client) (cr ContentResource, err error) {
 	var header []string
+	header = append(header, "--playlist-items", "1")
 	for k, v := range Header {
 		header = append(header, []string{"--add-headers", fmt.Sprintf("%s: %s", k, v)}...)
 	}
