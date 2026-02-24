@@ -67,7 +67,7 @@ func (f *Fidelity) Resource(client *resty.Client) (cr ext.ContentResource, err e
 }
 
 func (f *Fidelity) Download(cr ext.ContentResource) (err error) {
-	cmd := exec.Command("yt-dlp", cr.URL, "-o", cr.Name)
+	cmd := exec.Command("yt-dlp", cr.URL, "-o", cr.Name+".mp4")
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	err = cmd.Run()

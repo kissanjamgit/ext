@@ -96,7 +96,7 @@ func (p *PornBox) Resource(client *resty.Client) (cr ext.ContentResource, err er
 }
 
 func (*PornBox) Download(cr ext.ContentResource) (err error) {
-	cmd := exec.Command("yt-dlp", cr.URL, "-o", cr.Name)
+	cmd := exec.Command("yt-dlp", cr.URL, "-o", cr.Name+".mp4")
 	err = cmd.Run()
 	return
 }

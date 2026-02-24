@@ -4,6 +4,7 @@ package ext
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"resty.dev/v3"
@@ -62,7 +63,7 @@ func NewSiteAlter(Source string) Site {
 
 func (s *SiteAlter) Resource(*resty.Client) (cr ContentResource, err error) {
 	var header []string
-	header = append(header, "--playlist-items", "1")
+	// header = append(header, "--playlist-items", "1")
 	for k, v := range Header {
 		header = append(header, []string{"--add-headers", fmt.Sprintf("%s: %s", k, v)}...)
 	}
@@ -83,16 +84,17 @@ func (s *SiteAlter) Resource(*resty.Client) (cr ContentResource, err error) {
 	return
 }
 
-func (*SiteAlter) Download(cr ContentResource) (err error) {
-	var header []string
-	for k, v := range Header {
-		header = append(header, []string{"--add-header", fmt.Sprintf("%s: %s", k, v)}...)
-	}
-	arg := []string{"yt-dlp", cr.URL, "-o", cr.Name}
-	arg = append(arg, header...)
+func (s *SiteAlter) Download(cr ContentResource) (err error) {
+	// var header []string
+	// for k, v := range Header {
+	// 	header = append(header, []string{"--add-header", fmt.Sprintf("%s: %s", k, v)}...)
+	// }
+	arg := []string{"yt-dlp", "-v", s.Source, "-o", cr.Name + ".mp4"}
+	// arg = append(arg, header...)
 	cmd := exec.Command("yt-dlp")
+	cmd.Stderr = os.Stderr
 	cmd.Args = arg
-	cmd.Args = header
+	// cmd.Args = header
 	err = cmd.Run()
 	return
 }
