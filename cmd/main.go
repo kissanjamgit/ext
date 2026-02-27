@@ -46,6 +46,7 @@ var convergTree = map[string]func(string) ext.Site{
 	"evilangel":          devilsfilm.New,
 	"tabooheat":          devilsfilm.New,
 	"accidentalgangbang": devilsfilm.New,
+	"mommyblowsbest":     devilsfilm.New,
 
 	"kink":           kk.New,
 	"adultdvdempire": advd.New,
@@ -171,7 +172,14 @@ func facade() {
 			fmt.Println(err)
 			return
 		}
+		fmt.Fprint(os.Stderr, "\033[A\033[2K")
 		input = httpSplit(str)
+		var out strings.Builder
+		out.WriteString(input[0])
+		for _, i := range input[1:] {
+			out.WriteString(" " + i)
+		}
+		fmt.Fprintln(os.Stderr, out.String())
 	}
 	if *clipboardArg {
 		i, err := clipboard.ReadAll()

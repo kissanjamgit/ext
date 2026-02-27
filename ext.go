@@ -4,6 +4,7 @@ package ext
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 
@@ -85,14 +86,21 @@ func (s *SiteAlter) Resource(*resty.Client) (cr ContentResource, err error) {
 }
 
 func (s *SiteAlter) Download(cr ContentResource) (err error) {
-	// var header []string
-	// for k, v := range Header {
-	// 	header = append(header, []string{"--add-header", fmt.Sprintf("%s: %s", k, v)}...)
-	// }
-	arg := []string{"yt-dlp", "-v", s.Source, "-o", cr.Name + ".mp4"}
-	// arg = append(arg, header...)
+	var header []string
+	for k, v := range Header {
+		header = append(header, []string{"--add-header", fmt.Sprintf("%s: %s", k, v)}...)
+	}
+
+	uri, err := url.Parse(s.Source)
+	if err != nil {
+		return err
+	}
+	header = append(header, []string{"--add-header", fmt.Sprintf("%s://%s", uri.Scheme, uri.Host)}...)
+	arg := []string{"yt-dlp", s.Source, "-o", cr.Name + ".mp4"}
+	arg = append(arg, header...)
 	cmd := exec.Command("yt-dlp")
 	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
 	cmd.Args = arg
 	// cmd.Args = header
 	err = cmd.Run()
