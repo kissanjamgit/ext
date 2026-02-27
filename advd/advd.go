@@ -36,7 +36,6 @@ func clip(a *Advd, client *resty.Client, ID string) (cr ext.ContentResource, err
 	// submatch := regexp.MustCompile(`<link rel="alternate" type="[^"]" title="([^"]+)" href="([^"])"`).FindStringSubmatch(res.String())
 	os.WriteFile("content.html", res.Bytes(), 0o644)
 	submatch := regexp.MustCompile(`<h1 class="clip-page__detail__title__primary">([^<]*)</h1>`).FindStringSubmatch(res.String())
-	fmt.Println(submatch)
 	if len(submatch) < 2 {
 		err = fmt.Errorf("(clip) `len(submatch) < 3`")
 		return
