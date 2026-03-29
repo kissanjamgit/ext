@@ -64,7 +64,7 @@ func NewSiteAlter(Source string) Site {
 
 func (s *SiteAlter) Resource(*resty.Client) (cr ContentResource, err error) {
 	var header []string
-	// header = append(header, "--playlist-items", "1")
+	header = append(header, "--playlist-items", "1")
 	for k, v := range Header {
 		header = append(header, []string{"--add-headers", fmt.Sprintf("%s: %s", k, v)}...)
 	}
@@ -72,6 +72,7 @@ func (s *SiteAlter) Resource(*resty.Client) (cr ContentResource, err error) {
 	arg = append(arg, header...)
 	cmd := exec.Command("yt-dlp")
 	cmd.Args = arg
+	// fmt.Println(cmd.String())
 	output, err := cmd.Output()
 	if err != nil {
 		return
@@ -87,9 +88,12 @@ func (s *SiteAlter) Resource(*resty.Client) (cr ContentResource, err error) {
 
 func (s *SiteAlter) Download(cr ContentResource) (err error) {
 	var header []string
+
+	header = append(header, "--playlist-items", "1")
 	for k, v := range Header {
 		header = append(header, []string{"--add-header", fmt.Sprintf("%s: %s", k, v)}...)
 	}
+	// header = append(header, "-v")
 
 	uri, err := url.Parse(s.Source)
 	if err != nil {

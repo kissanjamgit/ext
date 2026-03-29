@@ -60,7 +60,7 @@ func (b *Braz) Resource(client *resty.Client) (cr ext.ContentResource, err error
 
 	case "newbrazz.com":
 		break
-	case "www.brazzers.com":
+	case "brazzers.com":
 		{
 			// path := strings.Split(u.Path, "/")
 			// if len(path) < 3 {
@@ -73,6 +73,7 @@ func (b *Braz) Resource(client *resty.Client) (cr ext.ContentResource, err error
 				return cr, err
 			}
 			uri = fmt.Sprintf("https://newbrazz.com/video/%s/", name)
+			// fmt.Println(uri)
 		}
 
 	case "bang-free.com":

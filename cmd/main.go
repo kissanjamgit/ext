@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/kissanjamgit/ext/savefiles"
 	"github.com/kissanjamgit/ext/streamtape"
 	"github.com/kissanjamgit/ext/strmup"
+	"github.com/kissanjamgit/ext/vidara"
 	"github.com/kissanjamgit/ext/vidnest"
 
 	"resty.dev/v3"
@@ -34,6 +36,7 @@ var convergTree = map[string]func(string) ext.Site{
 	"vidnest":    vidnest.New,
 	"streamtape": streamtape.New,
 	"strmup":     strmup.New,
+	"vidara":     vidara.New,
 
 	"devilsfilm":         devilsfilm.New,
 	"puretaboo":          devilsfilm.New,
@@ -47,6 +50,10 @@ var convergTree = map[string]func(string) ext.Site{
 	"tabooheat":          devilsfilm.New,
 	"accidentalgangbang": devilsfilm.New,
 	"mommyblowsbest":     devilsfilm.New,
+	"nurumassage":        devilsfilm.New,
+	"filthykings":        devilsfilm.New,
+	"dogfartnetwork":     devilsfilm.New,
+	"gangbangcreampie":   devilsfilm.New,
 
 	"kink":           kk.New,
 	"adultdvdempire": advd.New,
@@ -122,11 +129,10 @@ func handle(item string) (s ext.Site, err error) {
 	return
 }
 
-func httpSplit(str string) []string {
+func httpSplit(str string) (l []string) {
 	str = strings.ReplaceAll(str, "http", " http")
-	str = strings.TrimSpace(str)
-	value := strings.Split(str, " ")
-	return value
+	l = regexp.MustCompile(`http[^\s]+`).FindAllString(str, -1)
+	return
 }
 
 type inputError struct {
